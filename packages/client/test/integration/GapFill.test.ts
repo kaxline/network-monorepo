@@ -30,7 +30,6 @@ describeRepeats('GapFill with resends', () => {
             },
             autoConnect: false,
             autoDisconnect: false,
-            // @ts-expect-error
             maxRetries: 2,
         })
         c.onError = jest.fn()
