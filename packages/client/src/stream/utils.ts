@@ -33,10 +33,11 @@ export function validateOptions<U>(optionsOrStreamId: StreamPartDefinition): Val
             streamPartition: 0,
         }
     } else if (typeof optionsOrStreamId === 'object') {
-        if (optionsOrStreamId.stream) {
+        if (typeof optionsOrStreamId.stream === 'object') {
             const { stream, ...other } = optionsOrStreamId
             return validateOptions({
                 ...other,
+                // @ts-expect-error asdas
                 ...validateOptions(stream),
             })
         }
