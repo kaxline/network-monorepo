@@ -137,6 +137,7 @@
     "@ethersproject/abi": "^5.2.0",
     "@ethersproject/address": "^5.2.0",
     "@ethersproject/bignumber": "^5.2.0",
+    "@ethersproject/abstract-signer": "^5.2.0",
     "@ethersproject/bytes": "^5.2.0",
     "@ethersproject/contracts": "^5.2.0",
     "@ethersproject/keccak256": "^5.2.0",
