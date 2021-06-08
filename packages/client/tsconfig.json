@@ -2,7 +2,8 @@
     "extends": "@streamr/dev-config/ts/tsconfig.browser.json",
     "compilerOptions": {
         "declarationDir": "dist/types",
-        "outDir": "dist"
+        "outDir": "dist",
+        "lib": [ "es2015" ]
     },
     "include": [
         "src/**/*",

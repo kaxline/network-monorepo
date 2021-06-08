@@ -1,4 +1,5 @@
 import StreamrClient from 'streamr-client'
+import config from './config'
 
 const log = (msg) => {
     const elem = document.createElement('p')
@@ -7,7 +8,7 @@ const log = (msg) => {
 }
 
 // Create the client with default options
-const client = new StreamrClient()
+const client = new StreamrClient(config)
 
 document.getElementById('subscribe').addEventListener('click', () => {
     // Subscribe to a stream

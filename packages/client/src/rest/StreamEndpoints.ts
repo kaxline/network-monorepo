@@ -13,6 +13,7 @@ import { isKeyExchangeStream } from '../stream/encryption/KeyExchangeUtils'
 import authFetch, { ErrorCode, NotFoundError } from './authFetch'
 import { EthereumAddress } from '../types'
 import { StreamrClient } from '../StreamrClient'
+import { StreamRegistryOnchain } from '../stream/onchainStreamRegistry/StreamRegistryOnchain'
 // TODO change this import when streamr-client-protocol exports StreamMessage type or the enums types directly
 import { ContentType, EncryptionType, SignatureType, StreamMessageType } from 'streamr-client-protocol/dist/src/protocol/message_layer/StreamMessage'
 import { StorageNode } from '../stream/StorageNode'
@@ -82,9 +83,11 @@ export class StreamEndpoints {
 
     /** @internal */
     client: StreamrClient
+    streamRegistryOnchain: StreamRegistryOnchain
 
     constructor(client: StreamrClient) {
         this.client = client
+        this.streamRegistryOnchain = new StreamRegistryOnchain(client)
     }
 
     /**
@@ -104,7 +107,8 @@ export class StreamEndpoints {
 
         const url = getEndpointUrl(this.client.options.restUrl, 'streams', streamId)
         const json = await authFetch<StreamProperties>(url, this.client.session)
-        return new Stream(this.client, json)
+        // return new Stream(this.client, json)
+        return this.streamRegistryOnchain.getStreamById(streamId)
     }
 
     /**
@@ -135,23 +139,25 @@ export class StreamEndpoints {
      * @category Important
      * @param props - if id is specified, it can be full streamId or path
      */
-    async createStream(props?: Partial<StreamProperties>) {
+    async createStream(props: Partial<StreamProperties>): Promise<Stream> {
         this.client.debug('createStream %o', {
             props,
         })
-        const body = (props?.id !== undefined) ? {
-            ...props,
-            id: await createStreamId(props.id, () => this.client.getAddress())
-        } : props
-        const json = await authFetch<StreamProperties>(
-            getEndpointUrl(this.client.options.restUrl, 'streams'),
-            this.client.session,
-            {
-                method: 'POST',
-                body: JSON.stringify(body),
-            },
-        )
-        return new Stream(this.client, json)
+        const propsFilled = new StreamProperties(props)
+        // const body = (props?.id !== undefined) ? {
+        //     ...props,
+        //     id: await createStreamId(props.id, () => this.client.getAddress())
+        // } : props
+        // const json = await authFetch<StreamProperties>(
+        //     getEndpointUrl(this.client.options.restUrl, 'streams'),
+        //     this.client.session,
+        //     {
+        //         method: 'POST',
+        //         body: JSON.stringify(body),
+        //     },
+        // )
+        return this.streamRegistryOnchain.createStream(propsFilled)
+        // return new Stream(this.client, json)
     }
 
     /**

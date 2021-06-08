@@ -61,6 +61,8 @@ export type StrictStreamrClientOptions = {
     sidechain: ConnectionInfo & { chainId?: number }
     tokenAddress: EthereumAddress,
     tokenSidechainAddress: EthereumAddress,
+    streamRegistryAddress: EthereumAddress,
+    ensCacheSidechainAddress: EthereumAddress,
     dataUnion: {
         /**
          * Threshold value set in AMB configs, smallest token amount to pass over the bridge if
@@ -140,6 +142,8 @@ export const STREAM_CLIENT_DEFAULTS: StrictStreamrClientOptions = {
     },
     tokenAddress: '0x0Cf0Ee63788A0849fE5297F3407f701E122cC023',
     tokenSidechainAddress: '0xE4a2620edE1058D61BEe5F45F6414314fdf10548',
+    streamRegistryAddress: '0x0',
+    ensCacheSidechainAddress: '0x0',
     dataUnion: {
         minimumWithdrawTokenWei: '1000000',
         payForTransport: true,

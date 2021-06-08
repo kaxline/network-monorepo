@@ -39,19 +39,22 @@ export enum StreamOperation {
     STREAM_SHARE = 'stream_share'
 }
 
-export interface StreamProperties {
+export class StreamProperties {
     id?: string
+    path: string
     name?: string
     description?: string
     config?: {
         fields: Field[];
     }
-    partitions?: number
+    partitions?: number // error if  not number+ >0, 1 default
     requireSignedData?: boolean
     requireEncryptedData?: boolean
     storageDays?: number
     inactivityThresholdHours?: number
 }
+
+function fillDefaultValues()
 
 const VALID_FIELD_TYPES = ['number', 'string', 'boolean', 'list', 'map'] as const
 

@@ -7,9 +7,6 @@ import config from './config'
 
 const createClient = (opts = {}) => new StreamrClient({
     ...config.clientOptions,
-    auth: {
-        privateKey: fakePrivateKey(),
-    },
     autoConnect: false,
     autoDisconnect: false,
     ...opts,
@@ -26,7 +23,7 @@ describe('Stream', () => {
         stream = await client.createStream({
             name: uid('stream-integration-test')
         })
-        await stream.addToStorageNode(StorageNode.STREAMR_DOCKER_DEV)
+        // await stream.addToStorageNode(StorageNode.STREAMR_DOCKER_DEV)
     })
 
     afterEach(async () => {
