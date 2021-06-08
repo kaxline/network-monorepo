@@ -10,7 +10,7 @@
             "request": "launch",
             "runtimeArgs": [
                 "run",
-                "test-integration"
+                "t"
             ],
             "runtimeExecutable": "npm",
             "skipFiles": [
@@ -35,6 +35,25 @@
             "skipFiles": [
                 "<node_internals>/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Tests",
+            "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+            "args": [
+                "--verbose",
+                "--useStderr",
+                "--forceExit",
+                "--detectOpenHandles",
+                "test/integration/Stream.test.ts"
+            ],
+            // "preLaunchTask": "build",
+            "internalConsoleOptions": "openOnSessionStart",
+            // "outFiles": [
+            //     "${workspaceRoot}/dist/**/*"
+            // ],
+            // "envFile": "${workspaceRoot}/.env"
         }
     ]
 }

@@ -61,7 +61,7 @@ export type StrictStreamrClientOptions = {
     sidechain: ConnectionInfo & { chainId?: number }
     tokenAddress: EthereumAddress,
     tokenSidechainAddress: EthereumAddress,
-    streamRegistryAddress: EthereumAddress,
+    streamRegistrySidechainAddress: EthereumAddress,
     ensCacheSidechainAddress: EthereumAddress,
     dataUnion: {
         /**

@@ -139,11 +139,11 @@ export class StreamEndpoints {
      * @category Important
      * @param props - if id is specified, it can be full streamId or path
      */
-    async createStream(props: Partial<StreamProperties>): Promise<Stream> {
+    async createStream(props: StreamProperties): Promise<Stream> {
         this.client.debug('createStream %o', {
             props,
         })
-        const propsFilled = new StreamProperties(props)
+        // const propsFilled = new StreamProperties(props)
         // const body = (props?.id !== undefined) ? {
         //     ...props,
         //     id: await createStreamId(props.id, () => this.client.getAddress())
@@ -156,7 +156,7 @@ export class StreamEndpoints {
         //         body: JSON.stringify(body),
         //     },
         // )
-        return this.streamRegistryOnchain.createStream(propsFilled)
+        return this.streamRegistryOnchain.createStream(props)
         // return new Stream(this.client, json)
     }
 

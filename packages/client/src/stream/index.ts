@@ -41,7 +41,7 @@ export enum StreamOperation {
 
 export class StreamProperties {
     id?: string
-    path: string
+    path?: string
     name?: string
     description?: string
     config?: {
@@ -54,7 +54,7 @@ export class StreamProperties {
     inactivityThresholdHours?: number
 }
 
-function fillDefaultValues()
+// function fillDefaultValues()
 
 const VALID_FIELD_TYPES = ['number', 'string', 'boolean', 'list', 'map'] as const
 
