@@ -98,15 +98,15 @@ export class StreamEndpoints {
             streamId,
         })
 
-        if (isKeyExchangeStream(streamId)) {
-            return new Stream(this.client, {
-                id: streamId,
-                partitions: 1,
-            })
-        }
+        // if (isKeyExchangeStream(streamId)) {
+        //     return new Stream(this.client, {
+        //         id: streamId,
+        //         partitions: 1,
+        //     })
+        // }
 
-        const url = getEndpointUrl(this.client.options.restUrl, 'streams', streamId)
-        const json = await authFetch<StreamProperties>(url, this.client.session)
+        // const url = getEndpointUrl(this.client.options.restUrl, 'streams', streamId)
+        // const json = await authFetch<StreamProperties>(url, this.client.session)
         // return new Stream(this.client, json)
         return this.streamRegistryOnchain.getStreamById(streamId)
     }

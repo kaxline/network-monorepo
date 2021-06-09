@@ -24,11 +24,11 @@ module.exports = {
             url: `http://${process.env.STREAMR_DOCKER_DEV_HOST || '10.200.10.1'}:8891`
         },
         sidechain: {
-            url: process.env.SIDECHAIN_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || '10.200.10.1'}:8546`,
+            url: process.env.SIDECHAIN_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || 'localhost'}:8546`,
             timeout: toNumber(process.env.TEST_TIMEOUT),
         },
         mainnet: {
-            url: process.env.ETHEREUM_SERVER_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || '10.200.10.1'}:8545`,
+            url: process.env.ETHEREUM_SERVER_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || 'localhost'}:8545`,
             timeout: toNumber(process.env.TEST_TIMEOUT),
         },
         autoConnect: false,

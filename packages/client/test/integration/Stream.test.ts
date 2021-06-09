@@ -1,5 +1,5 @@
 import { StreamrClient } from '../../src/StreamrClient'
-import { Stream } from '../../src/stream'
+import { Stream, StreamProperties } from '../../src/stream'
 import { uid, fakePrivateKey, getPublishTestMessages } from '../utils'
 import { StorageNode } from '../../src/stream/StorageNode'
 
@@ -17,26 +17,40 @@ const createClient = (opts = {}) => new StreamrClient({
 
 describe('Stream', () => {
     let client: StreamrClient
-    let stream: Stream
+    let testProps: StreamProperties
+    let streamId: string
+    // let stream: Stream
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         client = createClient()
         await client.connect()
-
-        
+        const randompath = '/' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10)
+        testProps = {
+            name: uid('stream-integration-test'),
+            path: randompath
+        }
+        streamId = await (await client.ethereum.getAddress()).toLowerCase() + randompath
         // await stream.addToStorageNode(StorageNode.STREAMR_DOCKER_DEV)
     })
 
-    afterEach(async () => {
+    afterAll(async () => {
         await client.disconnect()
     })
 
     describe('onchainStreams', () => {
         it('createStream', async () => {
-            stream = await client.createStream({
-                name: uid('stream-integration-test')
-            })
-            console.log('created')
+            console.log(streamId)
+
+            const stream : Stream = await client.createStream(testProps)
+            expect(stream.name).toEqual(testProps.name)
+            expect(stream.id).toEqual(streamId)
+            expect(stream.path).toEqual(testProps.path)
+        })
+        it('getStreamById', async () => {
+            console.log(streamId)
+            const stream : Stream = await client.getStream(streamId)
+            expect(stream.id).toEqual(streamId)
+            expect(stream.name).toEqual(testProps.name)
         })
     })
 
