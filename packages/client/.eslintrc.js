@@ -44,6 +44,11 @@ module.exports = {
         'no-restricted-syntax': [
             'error', 'ForInStatement', 'LabeledStatement', 'WithStatement'
         ],
+        "import/resolver": {
+            "node": {
+              "extensions": [".js", ".jsx", ".ts", ".tsx"]
+            }
+        },
         'import/extensions': ['error', 'never', { json: 'always' }],
         'lines-between-class-members': 'off',
         'padded-blocks': 'off',
@@ -52,7 +57,8 @@ module.exports = {
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
         'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': ['error'],
+        'import/no-unresolved': 'warn',
+        '@typescript-eslint/no-unused-vars': ['warn'],
     },
     settings: {
         'import/resolver': {

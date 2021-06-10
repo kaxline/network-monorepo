@@ -291,7 +291,8 @@ export class StreamrClient extends EventEmitter { // eslint-disable-line no-rede
      * @category Important
      */
     async connect() {
-        return this.connection.connect()
+        // return this.connection.connect()
+        const a = this.ethereum
     }
 
     async nextConnection() {

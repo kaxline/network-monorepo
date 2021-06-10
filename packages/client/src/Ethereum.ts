@@ -17,7 +17,7 @@ export default class StreamrEthereum {
 
     _getAddress?: () => Promise<string>
     _getSigner?: () => Signer
-    _getSidechainSigner?: () => Signer
+    _getSidechainSigner?: () => Promise<Signer>
     client
 
     constructor(client: StreamrClient) {
@@ -29,7 +29,7 @@ export default class StreamrEthereum {
             const address = getAddress(computeAddress(key))
             this._getAddress = async () => address
             this._getSigner = () => new Wallet(key, this.getMainnetProvider())
-            this._getSidechainSigner = () => new Wallet(key, this.getSidechainProvider())
+            this._getSidechainSigner = async () => new Wallet(key, this.getSidechainProvider())
         } else if ('ethereum' in auth && auth.ethereum) {
             const ethereumConfig = auth.ethereum!
             this._getAddress = async () => {
@@ -95,7 +95,7 @@ export default class StreamrEthereum {
         return this._getSigner()
     }
 
-    getSidechainSigner(): Signer {
+    async getSidechainSigner(): Promise<Signer> {
         if (!this._getSidechainSigner) {
             // _getSidechainSigner is assigned in constructor
             throw new Error("StreamrClient not authenticated! Can't send transactions or sign messages.")

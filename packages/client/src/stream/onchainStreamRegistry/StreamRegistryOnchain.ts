@@ -1,11 +1,11 @@
-import StreamrClient, { EthereumAddress } from '../..'
+import StreamrClient from '../..'
 import { Stream, StreamProperties } from '..'
 import { Contract } from '@ethersproject/contracts'
 // import { Wallet } from '@ethersproject/wallet'
 import { Signer } from '@ethersproject/abstract-signer'
 import StreamrEthereum from '../../Ethereum'
 import debug from 'debug'
-import { StreamRegistry } from './StreamRegistry'
+import type { StreamRegistry } from './StreamRegistry'
 import StreamRegistryArtifact from './StreamRegistryArtifact.json'
 // import { Provider } from '@ethersproject/abstract-provider'
 
@@ -15,9 +15,9 @@ export class StreamRegistryOnchain {
     client: StreamrClient
     ethereum: StreamrEthereum
     // streamRegistryAddress: EthereumAddress
-    streamRegistry: StreamRegistry
+    streamRegistry?: StreamRegistry
     // ensCacheSidechainAddress: EthereumAddress
-    sideChainPrivider: Signer
+    sideChainPrivider?: Signer
 
     constructor(client: StreamrClient) {
         log('creating StreamRegistryOnchain')
@@ -25,18 +25,27 @@ export class StreamRegistryOnchain {
         this.ethereum = client.ethereum
         // this.streamRegistryAddress = client.options.streamRegistrySidechainAddress
         // this.ensCacheSidechainAddress = client.options.ensCacheSidechainAddress
-        this.sideChainPrivider = this.ethereum.getSidechainSigner() as Signer
+        // this.sideChainPrivider = this.ethereum.getSidechainSigner() as Signer
         // console.log('######### regaddr' + client.options.streamRegistrySidechainAddress)
 
-        this.streamRegistry = new Contract(client.options.streamRegistrySidechainAddress,
-            StreamRegistryArtifact.abi, this.sideChainPrivider) as StreamRegistry
+        // this.streamRegistry = new Contract(client.options.streamRegistrySidechainAddress,
+        //     StreamRegistryArtifact.abi, this.sideChainPrivider) as StreamRegistry
         // console.log('######### contractaddr ' + this.streamRegistry.address)
     }
 
+    async connectToEthereum() {
+        if (!this.sideChainPrivider || !this.streamRegistry) {
+            this.sideChainPrivider = await this.ethereum.getSidechainSigner() as Signer
+            this.streamRegistry = new Contract(this.client.options.streamRegistrySidechainAddress,
+                StreamRegistryArtifact.abi, this.sideChainPrivider) as StreamRegistry
+        }
+    }
+
     async getStreamById(id: string): Promise<Stream> {
+        await this.connectToEthereum()
         log('getting stream(properties) by id from chain')
         // const a = this.ethereum.getAddress()
-        const propertiesString = await this.streamRegistry.getStreamMetadata(id)
+        const propertiesString = await this.streamRegistry?.getStreamMetadata(id) || '{'
         let parsedProps
         try {
             parsedProps = JSON.parse(propertiesString)
@@ -60,8 +69,8 @@ export class StreamRegistryOnchain {
         // const properties = this.streamRegistry.getStreamMetadata(id) as StreamProperties
 
         // console.log('#### ' + path + ' ' + propsJsonStr)
-        const tx = await this.streamRegistry.createStream(path, propsJsonStr)
-        await tx.wait()
+        const tx = await this.streamRegistry?.createStream(path, propsJsonStr)
+        await tx?.wait()
         const id = await (await this.ethereum.getAddress()).toLowerCase() + path
         const propsResult = {
             ...props,
@@ -75,6 +84,7 @@ export class StreamRegistryOnchain {
         // console.log('#### ' + JSON.stringify(metaDateFromChain))
         return new Stream(this.client, propsResult)
     }
+
 }
 
 // graphql over fetch:
