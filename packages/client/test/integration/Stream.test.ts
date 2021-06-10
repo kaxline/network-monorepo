@@ -51,6 +51,14 @@ describe('Stream', () => {
             expect(stream.id).toEqual(streamId)
             expect(stream.name).toEqual(testProps.name)
         })
+        it('listStreams', async () => {
+            // console.log(streamId)
+            setTimeout(async () => {
+                const res = await client.listStreams({})
+                console.log(res);
+            }, 5000);
+            
+        })
     })
 
     // describe('detectFields()', () => {

@@ -10,6 +10,7 @@ module.exports = {
         },
         url: process.env.WEBSOCKET_URL || `ws://${process.env.STREAMR_DOCKER_DEV_HOST || 'localhost'}/api/v1/ws`,
         restUrl: process.env.REST_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || 'localhost'}/api/v1`,
+        theGraphUrl: process.env.GRAPH_URL || `http://${process.env.STREAMR_DOCKER_DEV_HOST || 'localhost'}:8000/subgraphs/name/githubname/subgraphname`,
         streamrNodeAddress: '0xFCAd0B19bB29D4674531d6f115237E16AfCE377c',
         tokenAddress: process.env.TOKEN_ADDRESS || '0xbAA81A0179015bE47Ad439566374F2Bae098686F',
         tokenSidechainAddress: process.env.TOKEN_ADDRESS_SIDECHAIN || '0x73Be21733CC5D08e1a14Ea9a399fb27DB3BEf8fF',

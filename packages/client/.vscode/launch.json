@@ -54,6 +54,26 @@
             //     "${workspaceRoot}/dist/**/*"
             // ],
             // "envFile": "${workspaceRoot}/.env"
-        }
+        },
+        {
+            "type": "node",
+            "runtimeVersion": "14.17.0", // If i need to run node 4.8.7
+            "request": "launch",
+            "name": "Jest single run all tests",
+            "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+            "env": { "CI": "true" },
+            "args": [
+            //   "-c",
+            //   "./config/test/jest.json",
+              "--verbose",
+              "-i",
+              "--no-cache",
+              "test/integration/Stream.test.ts"
+            ],
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+            // "console": "integratedTerminal",
+            // "internalConsoleOptions": "neverOpen"
+          }
     ]
 }

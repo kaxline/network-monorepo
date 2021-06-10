@@ -8,9 +8,11 @@ import debug from 'debug'
 import type { StreamRegistry } from './StreamRegistry'
 import StreamRegistryArtifact from './StreamRegistryArtifact.json'
 // import { Provider } from '@ethersproject/abstract-provider'
-
+import fetch from 'node-fetch'
+// const fetch = require('node-fetch');
 const log = debug('StreamrClient::StreamRegistryOnchain')
 
+export interface StreamRegistryOnchain {}
 export class StreamRegistryOnchain {
     client: StreamrClient
     ethereum: StreamrEthereum
@@ -45,23 +47,76 @@ export class StreamRegistryOnchain {
         await this.connectToEthereum()
         log('getting stream(properties) by id from chain')
         // const a = this.ethereum.getAddress()
+        console.log(id);
+        
         const propertiesString = await this.streamRegistry?.getStreamMetadata(id) || '{'
-        let parsedProps
+        
+
+        return new Stream(this.client, this.parseStreamProps(id, propertiesString))
+        
+    }
+    async getAllStreams(): Promise<Array<Stream>> {
+        // await this.connectToEthereum()
+        log('getting all streams from thegraph')
+        // const a = this.ethereum.getAddress()
+        // console.log(id);
+        const query: string = this.buildGQLQuery()
+        console.log('######' + query)
+        const res = await fetch(this.client.options.theGraphUrl,{ 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                accept: '*/*',
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            body: query
+          })
+          const resJson = await res.json()
+          console.log(JSON.stringify(resJson))
+          return resJson.data.streams.map((streamobj: any) => {
+                return new Stream(this.client, this.parseStreamProps(streamobj.id, streamobj.metadata))
+          })
+        
+    }
+
+    buildGQLQuery(): string {
+        //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/"}) {
+        const query =  `{
+            streams {
+                 id,
+                 metadata,
+                 permissions {
+                   id,
+                       user,
+                       edit,
+                   canDelete,
+                   publish,
+                   subscribed,
+                   share,
+                 }
+               }
+          }`
+          return JSON.stringify({query})
+    }
+
+    parseStreamProps(id: string, propsString: string): StreamProperties {
+        let parsedProps : StreamProperties
         try {
-            parsedProps = JSON.parse(propertiesString)
+            parsedProps = JSON.parse(propsString)
             parsedProps = {
                 ...parsedProps,
                 id,
                 path: id.substring(id.indexOf('/'))
             }
         } catch (error) {
-            throw new Error(`could not parse prperties from onachein metadata: ${propertiesString}`)
+            // throw new Error(`could not parse prperties from onachein metadata: ${propsString}`)
+            return {id, description: 'ERROR IN PROPS'}
         }
-
-        return new Stream(this.client, parsedProps)
+        return parsedProps
     }
 
     async createStream(props: StreamProperties): Promise<Stream> {
+        await this.connectToEthereum()
         log('creating/registering stream onchain')
         // const a = this.ethereum.getAddress()
         const propsJsonStr : string = JSON.stringify(props)

@@ -59,6 +59,7 @@ export type StrictStreamrClientOptions = {
     keyExchange: Todo
     mainnet?: ConnectionInfo|string
     sidechain: ConnectionInfo & { chainId?: number }
+    theGraphUrl: string
     tokenAddress: EthereumAddress,
     tokenSidechainAddress: EthereumAddress,
     streamRegistrySidechainAddress: EthereumAddress,
@@ -114,6 +115,7 @@ export const STREAM_CLIENT_DEFAULTS: StrictStreamrClientOptions = {
     url: 'wss://streamr.network/api/v1/ws',
     restUrl: 'https://streamr.network/api/v1',
     streamrNodeAddress: '0xf3E5A65851C3779f468c9EcB32E6f25D9D68601a',
+    theGraphUrl: 'http://localhost:8000/subgraphs/name/githubname/subgraphname/',
 
     // P2P Streamr Network options
     autoConnect: true,

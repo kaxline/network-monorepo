@@ -115,12 +115,13 @@ export class StreamEndpoints {
      * @category Important
      */
     async listStreams(query: StreamListQuery = {}): Promise<Stream[]> {
-        this.client.debug('listStreams %o', {
-            query,
-        })
-        const url = getEndpointUrl(this.client.options.restUrl, 'streams') + '?' + qs.stringify(query)
-        const json = await authFetch<StreamProperties[]>(url, this.client.session)
-        return json ? json.map((stream: StreamProperties) => new Stream(this.client, stream)) : []
+        // this.client.debug('listStreams %o', {
+        //     query,
+        // })
+        // const url = getEndpointUrl(this.client.options.restUrl, 'streams') + '?' + qs.stringify(query)
+        // const json = await authFetch<StreamProperties[]>(url, this.client.session)
+        // return json ? json.map((stream: StreamProperties) => new Stream(this.client, stream)) : []
+        return this.streamRegistryOnchain.getAllStreams()
     }
 
     async getStreamByName(name: string) {
