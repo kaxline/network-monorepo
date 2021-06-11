@@ -1,9 +1,10 @@
 import { StreamrClient } from '../../src/StreamrClient'
-import { Stream, StreamProperties } from '../../src/stream'
+import { Stream, StreamPermision, StreamOperation, StreamProperties } from '../../src/stream'
 import { uid } from '../utils'
 // import { StorageNode } from '../../src/stream/StorageNode'
 
 import config from './config'
+import { EthereumAddress, UserStreamPermission } from '../../src'
 // import { log } from 'util'
 
 jest.setTimeout(15000)
@@ -19,6 +20,7 @@ describe('Stream', () => {
     let client: StreamrClient
     let testProps: StreamProperties
     let streamId: string
+    let userAddress: EthereumAddress
     // let stream: Stream
 
     beforeAll(async () => {
@@ -29,7 +31,8 @@ describe('Stream', () => {
             name: uid('stream-integration-test'),
             path: randompath
         }
-        streamId = await (await client.ethereum.getAddress()).toLowerCase() + randompath
+        userAddress = (await client.ethereum.getAddress()).toLowerCase()
+        streamId = await userAddress + randompath
         // await stream.addToStorageNode(StorageNode.STREAMR_DOCKER_DEV)
     })
 
@@ -51,11 +54,35 @@ describe('Stream', () => {
             expect(stream.id).toEqual(streamId)
             expect(stream.name).toEqual(testProps.name)
         })
+        it('getMyPermissions', async () => {
+            console.log(streamId)
+            const stream : Stream = await client.getStream(streamId)
+            expect(stream.id).toEqual(streamId)
+            expect(stream.name).toEqual(testProps.name)
+            const permissions : StreamPermision[] = await stream.getMyPermissions()
+          expect(permissions[0].operation).toEqual(StreamOperation.STREAM_EDIT)
+          expect(permissions[1].operation).toEqual(StreamOperation.STREAM_DELETE)
+          expect(permissions[2].operation).toEqual(StreamOperation.STREAM_SUBSCRIBE)
+          expect(permissions[3].operation).toEqual(StreamOperation.STREAM_PUBLISH)
+          expect(permissions[4].operation).toEqual(StreamOperation.STREAM_SHARE)
+          for (let permission of permissions) {
+              const directpermission: UserStreamPermission = permission as UserStreamPermission
+              expect(directpermission.user.toLowerCase()).toEqual(userAddress)
+          }
+        })
         it('listStreams', async () => {
             // console.log(streamId)
             setTimeout(async () => {
                 const res = await client.listStreams({})
                 console.log(res);
+                let containsTestStream = false
+                for (let stream of res) {
+                    if (stream.id === streamId) {
+                        containsTestStream = true
+                        break
+                    }
+                }
+                expect(containsTestStream).toEqual(true)
             }, 5000);
             
         })

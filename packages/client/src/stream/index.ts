@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 import { getAddress } from '@ethersproject/address'
 import { getEndpointUrl, until } from '../utils'
 import authFetch from '../rest/authFetch'
-
+import StreamRegistryOnchain from './onchainStreamRegistry/StreamRegistryOnchain'
 export { GroupKey } from './encryption/Encryption'
 
 import { StorageNode } from './StorageNode'
@@ -53,6 +53,16 @@ export class StreamProperties {
     storageDays?: number
     inactivityThresholdHours?: number
 }
+
+// export interface StreamPermissions {
+//     streamId: string,
+//     user: EthereumAddress,
+//     edit: boolean,
+//     delete: boolean,
+//     publish: boolean,
+//     subscribe: boolean,
+//     share: boolean,
+// }
 
 // function fillDefaultValues()
 
@@ -146,10 +156,11 @@ export class Stream {
     }
 
     async getMyPermissions() {
-        return authFetch<StreamPermision[]>(
-            getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions', 'me'),
-            this._client.session,
-        )
+        // return authFetch<StreamPermision[]>(
+        //     getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions', 'me'),
+        //     this._client.session,
+        // )
+        return this._client.streamRegistryOnchain.getPermissionsForUser(this.id)
     }
 
     async hasPermission(operation: StreamOperation, userId: string|undefined) {

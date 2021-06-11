@@ -1,4 +1,5 @@
-import StreamrClient from '../..'
+import StreamrClient, { StreamPermision } from '../..'
+import { StreamOperation } from '../index'
 import { Stream, StreamProperties } from '..'
 import { Contract } from '@ethersproject/contracts'
 // import { Wallet } from '@ethersproject/wallet'
@@ -9,6 +10,7 @@ import type { StreamRegistry } from './StreamRegistry'
 import StreamRegistryArtifact from './StreamRegistryArtifact.json'
 // import { Provider } from '@ethersproject/abstract-provider'
 import fetch from 'node-fetch'
+import { EthereumAddress } from '../../types'
 // const fetch = require('node-fetch');
 const log = debug('StreamrClient::StreamRegistryOnchain')
 
@@ -138,6 +140,35 @@ export class StreamRegistryOnchain {
         // const metaDateFromChain = await this.streamRegistry.getStreamMetadata(id)
         // console.log('#### ' + JSON.stringify(metaDateFromChain))
         return new Stream(this.client, propsResult)
+    }
+    // Promise<StreamPermision[]
+
+    async getPermissionsForUser(id: string): Promise<StreamPermision[]> {
+        await this.connectToEthereum()
+        const address: EthereumAddress = await this.ethereum.getAddress()
+        log('getting permission for stream for user')
+        const directPermissions = await this.streamRegistry?.getPermissionsForUser(id, address)
+        const publicPermissions = await this.streamRegistry?.getPermissionsForUser(id, '0x0000000000000000000000000000000000000000')
+        // const res2 = res?.slice(5, 10)
+        let perms: StreamPermision[] = []
+        if (directPermissions?.edit) perms.push({id:0, user: address, operation: StreamOperation.STREAM_EDIT})
+        if (directPermissions?.canDelete) perms.push({id:0, user: address, operation: StreamOperation.STREAM_DELETE})
+        if (directPermissions?.subscribed) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SUBSCRIBE})
+        if (directPermissions?.publish) perms.push({id:0, user: address, operation: StreamOperation.STREAM_PUBLISH})
+        if (directPermissions?.share) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SHARE})
+        if (publicPermissions?.edit) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_EDIT})
+        if (publicPermissions?.canDelete) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_DELETE})
+        if (publicPermissions?.subscribed) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SUBSCRIBE})
+        if (publicPermissions?.publish) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_PUBLISH})
+        if (publicPermissions?.share) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SHARE})
+        return perms
+        // res2?.map((el): StreamPermision => {
+        //     if (el.values()[0]) return {
+        //         id: 0,
+        //         operation: StreamOperation.STREAM_EDIT,
+        //         user: address
+        //     }
+        // })
     }
 
 }
