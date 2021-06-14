@@ -62,7 +62,30 @@ export class StreamRegistryOnchain {
         log('getting all streams from thegraph')
         // const a = this.ethereum.getAddress()
         // console.log(id);
-        const query: string = this.buildGQLQuery()
+        const query: string = this.buildGetStreamGQLQuery()
+        console.log('######' + query)
+        const res = await fetch(this.client.options.theGraphUrl,{ 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                accept: '*/*',
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            body: query
+          })
+          const resJson = await res.json()
+          console.log(JSON.stringify(resJson))
+          return resJson.data.streams.map((streamobj: any) => {
+                return new Stream(this.client, this.parseStreamProps(streamobj.id, streamobj.metadata))
+          })
+        
+    }
+    async getAllPermissionsForStream(): Promise<Array<Stream>> {
+        // await this.connectToEthereum()
+        log('getting all streams from thegraph')
+        // const a = this.ethereum.getAddress()
+        // console.log(id);
+        const query: string = this.buildGetStreamGQLQuery()
         console.log('######' + query)
         const res = await fetch(this.client.options.theGraphUrl,{ 
             method: 'POST',
@@ -81,7 +104,48 @@ export class StreamRegistryOnchain {
         
     }
 
-    buildGQLQuery(): string {
+    .. use querybuilder? i.e. https://www.npmjs.com/package/gql-query-builder
+    .. how to get permissions filtered on "they belong to the same stream"?
+    alternative: get stream with all its permission:
+
+    {
+        streams (  where: { 
+       id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/auxigkli"}) {
+         id,
+         metadata,
+         permissions {
+           id,
+               user,
+               edit,
+           canDelete,
+           publish,
+           subscribed,
+           share,
+         }
+       }
+     }
+
+
+    buildGetPermissionGQLQuery(): string {
+        //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/"}) {
+        const query =  `{
+            streams {
+                 id,
+                 metadata,
+                 permissions {
+                   id,
+                       user,
+                       edit,
+                   canDelete,
+                   publish,
+                   subscribed,
+                   share,
+                 }
+               }
+          }`
+          return JSON.stringify({query})
+    }
+    buildGetStreamGQLQuery(): string {
         //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/"}) {
         const query =  `{
             streams {

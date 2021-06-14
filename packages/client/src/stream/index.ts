@@ -149,10 +149,11 @@ export class Stream {
     }
 
     async getPermissions() {
-        return authFetch<StreamPermision[]>(
-            getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions'),
-            this._client.session,
-        )
+        // return authFetch<StreamPermision[]>(
+        //     getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions'),
+        //     this._client.session,
+        // )
+        return this._client.streamRegistryOnchain.getAllPermissionsForStream(this.id)
     }
 
     async getMyPermissions() {
