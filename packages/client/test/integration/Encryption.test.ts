@@ -230,10 +230,13 @@ describeRepeats('decryption', () => {
                 const sub = await subscriber.subscribe({
                     stream: stream.id,
                 }, done.wrapError((_parsedContent, streamMessage) => {
-                    // Check signature stuff
                     received.push(streamMessage)
+                    publisher.debug('msg %d of %d', received.length, msgs.length)
                     if (received.length === msgs.length) {
-                        done.resolve(undefined)
+                        // eslint-disable-next-line promise/catch-or-return
+                        sub.unsubscribe().finally(() => {
+                            done.resolve(undefined)
+                        })
                     }
                 }))
 
@@ -246,12 +249,16 @@ describeRepeats('decryption', () => {
                 // msg3 gk3 -
                 const groupKey1 = GroupKey.generate()
                 const groupKey2 = GroupKey.generate()
+                publisher.debug('publishing >>')
                 await publisher.setNextGroupKey(stream.id, groupKey1)
                 await publisher.publish(stream.id, msgs[0])
                 await publisher.setNextGroupKey(stream.id, groupKey2)
                 await publisher.publish(stream.id, msgs[1])
                 await publisher.publish(stream.id, msgs[2])
+                publisher.debug('publishing <<')
+                publisher.debug('waiting for messages >>')
                 await done
+                publisher.debug('waiting for messages <<')
                 expect(received.map((m) => m.getParsedContent())).toEqual(msgs)
                 received.forEach((streamMessage, index) => {
                     expect(streamMessage.signatureType).toBe(StreamMessage.SIGNATURE_TYPES.ETH)
