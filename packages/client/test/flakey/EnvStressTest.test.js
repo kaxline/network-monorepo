@@ -3,7 +3,7 @@ import { StreamrClient } from '../../src/StreamrClient'
 
 import { fakePrivateKey, uid } from '../utils'
 
-const clientOptions = require('../integration/config')
+import clientOptions from '../integration/config'
 
 const TEST_REPEATS = 6
 const MAX_CONCURRENCY = 24
