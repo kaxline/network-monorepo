@@ -49,7 +49,7 @@ describe('EnvStressTest', () => {
 
                         const names = []
                         for (let k = 0; k < j; k++) {
-                            names.push(uid(`stream ${k + 1} . `))
+                            names.push(uid(`stream${k + 1}.`))
                         }
 
                         const streams = await Promise.all(names.map((name, index) => (
