@@ -2,12 +2,13 @@ import fetch from 'node-fetch'
 import { getAddress } from '@ethersproject/address'
 import { getEndpointUrl, until } from '../utils'
 import authFetch from '../rest/authFetch'
-import StreamRegistryOnchain from './onchainStreamRegistry/StreamRegistryOnchain'
+// import StreamRegistryOnchain from './onchainStreamRegistry/StreamRegistryOnchain'
 export { GroupKey } from './encryption/Encryption'
 
 import { StorageNode } from './StorageNode'
 import { StreamrClient } from '../StreamrClient'
 import { EthereumAddress } from '../types'
+import { BigNumber } from 'ethers'
 
 // TODO explicit types: e.g. we never provide both streamId and id, or both streamPartition and partition
 export type StreamPartDefinitionOptions = { streamId?: string, streamPartition?: number, id?: string, partition?: number, stream?: Stream|string }
@@ -15,28 +16,34 @@ export type StreamPartDefinition = string | StreamPartDefinitionOptions
 
 export type ValidatedStreamPartDefinition = { streamId: string, streamPartition: number, key: string}
 
-interface StreamPermisionBase {
-    id: number
-    operation: StreamOperation
-}
-
-export interface UserStreamPermission extends StreamPermisionBase {
+export interface StreamPermission {
+    streamid: string
+    // operation: StreamOperation
     user: string
+    anonymous: boolean
+    edit: boolean
+    canDelete: boolean
+    publishExpiration: BigNumber
+    subscribeExpiration: BigNumber
+    share: boolean
 }
 
-export interface AnonymousStreamPermisson extends StreamPermisionBase {
-    anonymous: true
-}
+// export interface UserStreamPermission extends StreamPermisionBase {
+// }
 
-export type StreamPermision = UserStreamPermission | AnonymousStreamPermisson
+// export interface AnonymousStreamPermisson extends StreamPermisionBase {
+//     anonymous: true
+// }
+
+// export type StreamPermision = UserStreamPermission | AnonymousStreamPermisson
 
 export enum StreamOperation {
-    STREAM_GET = 'stream_get',
-    STREAM_EDIT = 'stream_edit',
-    STREAM_DELETE = 'stream_delete',
-    STREAM_PUBLISH = 'stream_publish',
-    STREAM_SUBSCRIBE = 'stream_subscribe',
-    STREAM_SHARE = 'stream_share'
+    // STREAM_GET = 'stream_get',
+    STREAM_EDIT = 'edit',
+    STREAM_DELETE = 'delete',
+    STREAM_PUBLISH = 'publishExpiration',
+    STREAM_SUBSCRIBE = 'subscribeExpiration',
+    STREAM_SHARE = 'share'
 }
 
 export class StreamProperties {
@@ -161,10 +168,10 @@ export class Stream {
         //     getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions', 'me'),
         //     this._client.session,
         // )
-        return this._client.streamRegistryOnchain.getPermissionsForUser(this.id)
+        return this._client.streamRegistryOnchain.getAllPermissionsForStream(this.id)
     }
 
-    async hasPermission(operation: StreamOperation, userId: string|undefined) {
+    async hasPermission(operation: StreamOperation, userId: string) {
         // eth addresses may be in checksumcase, but userId from server has no case
 
         const userIdCaseInsensitive = typeof userId === 'string' ? userId.toLowerCase() : undefined // if not string then undefined
@@ -193,7 +200,7 @@ export class Stream {
             permissionObject.anonymous = true
         }
 
-        return authFetch<StreamPermision>(
+        return authFetch<StreamPermission>(
             getEndpointUrl(this._client.options.restUrl, 'streams', this.id, 'permissions'),
             this._client.session,
             {

@@ -44,11 +44,11 @@ module.exports = {
         'no-restricted-syntax': [
             'error', 'ForInStatement', 'LabeledStatement', 'WithStatement'
         ],
-        "import/resolver": {
-            "node": {
-              "extensions": [".js", ".jsx", ".ts", ".tsx"]
-            }
-        },
+        // "import/resolver": {
+        //     "node": {
+        //       "extensions": [".js", ".jsx", ".ts", ".tsx"]
+        //     }
+        // },
         'import/extensions': ['error', 'never', { json: 'always' }],
         'lines-between-class-members': 'off',
         'padded-blocks': 'off',
