@@ -1,6 +1,6 @@
 import StreamrClient from '../..'
-import { StreamOperation, StreamPermission } from '../index'
-import { Stream, StreamProperties } from '..'
+import { StreamPermission, Stream, StreamProperties } from '../index'
+
 import { Contract } from '@ethersproject/contracts'
 // import { Wallet } from '@ethersproject/wallet'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -15,7 +15,7 @@ import { BigNumber } from 'ethers'
 // const fetch = require('node-fetch');
 const log = debug('StreamrClient::StreamRegistryOnchain')
 
-export interface StreamRegistryOnchain {}
+// export interface StreamRegistryOnchain {}
 export class StreamRegistryOnchain {
     client: StreamrClient
     ethereum: StreamrEthereum
@@ -50,64 +50,63 @@ export class StreamRegistryOnchain {
         await this.connectToEthereum()
         log('getting stream(properties) by id from chain')
         // const a = this.ethereum.getAddress()
-        console.log(id);
-        
-        const propertiesString = await this.streamRegistry?.getStreamMetadata(id) || '{'
-        
+        console.log(id)
 
-        return new Stream(this.client, this.parseStreamProps(id, propertiesString))
-        
+        const propertiesString = await this.streamRegistry?.getStreamMetadata(id) || '{'
+
+        return new Stream(this.client, StreamRegistryOnchain.parseStreamProps(id, propertiesString))
+
     }
     async getAllStreams(): Promise<Array<Stream>> {
         // await this.connectToEthereum()
         log('getting all streams from thegraph')
         // const a = this.ethereum.getAddress()
         // console.log(id);
-        const query: string = this.buildGetStreamGQLQuery()
+        const query: string = StreamRegistryOnchain.buildGetStreamGQLQuery()
         console.log('######' + query)
         const res = await this.queryTheGraph(query)
-          const resJson = await res.json()
-          if (resJson.errors.length > 0) {
-              throw new Error("failed to get streams from theGraph " + JSON.stringify(resJson.errors))
-          }
-          console.log(JSON.stringify(resJson))
-          return resJson.data.streams.map((streamobj: any) => {
-                return new Stream(this.client, this.parseStreamProps(streamobj.id, streamobj.metadata))
-          })
-        
+        const resJson = await res.json()
+        if (resJson.errors.length > 0) {
+            throw new Error('failed to get streams from theGraph ' + JSON.stringify(resJson.errors))
+        }
+        console.log(JSON.stringify(resJson))
+        return resJson.data.streams.map((streamobj: any) => {
+            return new Stream(this.client, StreamRegistryOnchain.parseStreamProps(streamobj.id, streamobj.metadata))
+        })
+
     }
     async getAllPermissionsForStream(streamid: string): Promise<Array<StreamPermission>> {
         // await this.connectToEthereum()
         log('getting all streams from thegraph')
         // const a = this.ethereum.getAddress()
         // console.log(id);
-        const query: string = this.buildGetPermissionGQLQuery(streamid)
+        const query: string = StreamRegistryOnchain.buildGetPermissionGQLQuery(streamid)
         console.log('######' + query)
         const res = await this.queryTheGraph(query)
         const resJson = await res.json()
         console.log(JSON.stringify(resJson))
         return resJson.data.streams.map((streamobj: any) => {
-            return new Stream(this.client, this.parseStreamProps(streamobj.id, streamobj.metadata))
+            return new Stream(this.client, StreamRegistryOnchain.parseStreamProps(streamobj.id, streamobj.metadata))
         })
     }
 
     async queryTheGraph(query: string): Promise<Response> {
-        return await fetch(this.client.options.theGraphUrl,{ 
+        return fetch(this.client.options.theGraphUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 accept: '*/*',
                 // 'Content-Type': 'application/x-www-form-urlencoded',
-              },
+            },
             body: query
-          })
+        })
     }
     // .. use querybuilder? i.e. https://www.npmjs.com/package/gql-query-builder
     // .. how to get permissions filtered on "they belong to the same stream"?
     // alternative: get stream with all its permission:
 
     // {
-    //     streams (  where: { 
+    //     streams (  where: {
     //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/auxigkli"}) {
     //      id,
     //      metadata,
@@ -123,11 +122,9 @@ export class StreamRegistryOnchain {
     //    }
     //  }
 
-
-    buildGetPermissionGQLQuery(streamid: string): string {
+    static buildGetPermissionGQLQuery(streamid: string): string {
         //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/"}) {
-        const query =  
-        `{
+        const query = `{
             streams (  where: { 
               id: "${streamid}"}) {
              id,
@@ -143,20 +140,21 @@ export class StreamRegistryOnchain {
              }
            }
          }`
-          return JSON.stringify({query})
+        return JSON.stringify({ query })
     }
-    buildGetStreamGQLQuery(): string {
+
+    static buildGetStreamGQLQuery(): string {
         //    id: "0x4178babe9e5148c6d5fd431cd72884b07ad855a0/"}) {
-        const query =  `{
+        const query = `{
             streams {
                  id,
                  metadata
                }
           }`
-          return JSON.stringify({query})
+        return JSON.stringify({ query })
     }
 
-    parseStreamProps(id: string, propsString: string): StreamProperties {
+    static parseStreamProps(id: string, propsString: string): StreamProperties {
         let parsedProps : StreamProperties
         try {
             parsedProps = JSON.parse(propsString)
@@ -167,25 +165,31 @@ export class StreamRegistryOnchain {
             }
         } catch (error) {
             // throw new Error(`could not parse prperties from onachein metadata: ${propsString}`)
-            return {id, description: 'ERROR IN PROPS'}
+            return { id, description: 'ERROR IN PROPS' }
         }
         return parsedProps
     }
 
-    async createStream(props: StreamProperties): Promise<Stream> {
+    async createStream(props?: StreamProperties): Promise<Stream> {
+        let properties = props || {}
         await this.connectToEthereum()
         log('creating/registering stream onchain')
         // const a = this.ethereum.getAddress()
-        const propsJsonStr : string = JSON.stringify(props)
-        const path = props.path || '/'
+        const propsJsonStr : string = JSON.stringify(properties)
+        let { path } = properties
+        if (!path && properties.id && properties.id.includes('/')) {
+            path = properties.id.slice(properties.id.indexOf('/'), properties.id.length)
+        }
+        path = path || '/'
+        // const path = properties.path || '/'
         // const properties = this.streamRegistry.getStreamMetadata(id) as StreamProperties
 
         // console.log('#### ' + path + ' ' + propsJsonStr)
         const tx = await this.streamRegistry?.createStream(path, propsJsonStr)
         await tx?.wait()
         const id = await (await this.ethereum.getAddress()).toLowerCase() + path
-        const propsResult = {
-            ...props,
+        properties = {
+            ...properties,
             id,
             path
         }
@@ -194,7 +198,7 @@ export class StreamRegistryOnchain {
         // console.log('#### id ' + id)
         // const metaDateFromChain = await this.streamRegistry.getStreamMetadata(id)
         // console.log('#### ' + JSON.stringify(metaDateFromChain))
-        return new Stream(this.client, propsResult)
+        return new Stream(this.client, properties)
     }
     // Promise<StreamPermision[]
 
@@ -204,40 +208,39 @@ export class StreamRegistryOnchain {
         log('getting permission for stream for user')
         const permissions = await this.streamRegistry?.getPermissionsForUser(streamid, userAddress)
         return {
-                streamid: streamid,
-                // operation: StreamOperation
-                user: userAddress,
-                anonymous: false,
-                edit: permissions?.edit || false,
-                canDelete: permissions?.canDelete || false,
-                publishExpiration: permissions?.publishExpiration || new BigNumber(null, '0x0'),
-                subscribeExpiration: permissions?.subscribeExpiration || new BigNumber(null, '0x0'),
-                share: permissions?.share || false
-            }
+            streamid,
+            // operation: StreamOperation
+            user: userAddress,
+            edit: permissions?.edit || false,
+            canDelete: permissions?.canDelete || false,
+            publishExpiration: permissions?.publishExpiration || new BigNumber(null, '0x0'),
+            subscribeExpiration: permissions?.subscribeExpiration || new BigNumber(null, '0x0'),
+            share: permissions?.share || false
         }
-        // const publicPermissions = await this.streamRegistry?.getPermissionsForUser(id, '0x0000000000000000000000000000000000000000')
-        // const res2 = res?.slice(5, 10)
-        // let perms: StreamPermission[] = []
-        // if (directPermissions?.edit) perms.push({id:0, user: address, operation: StreamOperation.STREAM_EDIT})
-        // if (directPermissions?.canDelete) perms.push({id:0, user: address, operation: StreamOperation.STREAM_DELETE})
-        // if (directPermissions?.subscribed) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SUBSCRIBE})
-        // if (directPermissions?.publish) perms.push({id:0, user: address, operation: StreamOperation.STREAM_PUBLISH})
-        // if (directPermissions?.share) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SHARE})
-        // if (publicPermissions?.edit) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_EDIT})
-        // if (publicPermissions?.canDelete) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_DELETE})
-        // if (publicPermissions?.subscribed) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SUBSCRIBE})
-        // if (publicPermissions?.publish) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_PUBLISH})
-        // if (publicPermissions?.share) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SHARE})
-        // perms.push(directPermissions)
-        // perms.push(publicPermissions)
-        // return perms
-        // res2?.map((el): StreamPermision => {
-        //     if (el.values()[0]) return {
-        //         id: 0,
-        //         operation: StreamOperation.STREAM_EDIT,
-        //         user: address
-        //     }
-        // })
+    }
+    // const publicPermissions = await this.streamRegistry?.getPermissionsForUser(id, '0x0000000000000000000000000000000000000000')
+    // const res2 = res?.slice(5, 10)
+    // let perms: StreamPermission[] = []
+    // if (directPermissions?.edit) perms.push({id:0, user: address, operation: StreamOperation.STREAM_EDIT})
+    // if (directPermissions?.canDelete) perms.push({id:0, user: address, operation: StreamOperation.STREAM_DELETE})
+    // if (directPermissions?.subscribed) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SUBSCRIBE})
+    // if (directPermissions?.publish) perms.push({id:0, user: address, operation: StreamOperation.STREAM_PUBLISH})
+    // if (directPermissions?.share) perms.push({id:0, user: address, operation: StreamOperation.STREAM_SHARE})
+    // if (publicPermissions?.edit) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_EDIT})
+    // if (publicPermissions?.canDelete) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_DELETE})
+    // if (publicPermissions?.subscribed) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SUBSCRIBE})
+    // if (publicPermissions?.publish) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_PUBLISH})
+    // if (publicPermissions?.share) perms.push({id:0, anonymous: true, operation: StreamOperation.STREAM_SHARE})
+    // perms.push(directPermissions)
+    // perms.push(publicPermissions)
+    // return perms
+    // res2?.map((el): StreamPermision => {
+    //     if (el.values()[0]) return {
+    //         id: 0,
+    //         operation: StreamOperation.STREAM_EDIT,
+    //         user: address
+    //     }
+    // })
     // }
 
 }

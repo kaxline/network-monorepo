@@ -13,7 +13,7 @@ import { StreamPart } from '../stream/StreamPart'
 import authFetch, { ErrorCode, NotFoundError } from './authFetch'
 import { EthereumAddress } from '../types'
 import { StreamrClient } from '../StreamrClient'
-import { StreamRegistryOnchain } from '../stream/onchainStreamRegistry/StreamRegistryOnchain'
+import { StreamRegistryOnchain } from '../stream/onchainStreamRegistry/StreamRegistryAdapter'
 // TODO change this import when streamr-client-protocol exports StreamMessage type or the enums types directly
 import { ContentType, EncryptionType, SignatureType, StreamMessageType } from 'streamr-client-protocol/dist/src/protocol/message_layer/StreamMessage'
 import { StorageNode } from '../stream/StorageNode'
@@ -140,7 +140,7 @@ export class StreamEndpoints {
      * @category Important
      * @param props - if id is specified, it can be full streamId or path
      */
-    async createStream(props: StreamProperties): Promise<Stream> {
+    async createStream(props?: StreamProperties): Promise<Stream> {
         this.client.debug('createStream %o', {
             props,
         })

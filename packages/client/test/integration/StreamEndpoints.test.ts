@@ -8,6 +8,8 @@ import { uid, fakeAddress } from '../utils'
 
 import config from './config'
 
+jest.setTimeout(15000)
+
 /**
  * These tests should be run in sequential order!
  */
@@ -26,18 +28,20 @@ function TestStreamEndpoints(getName: () => string) {
     } as any)
 
     beforeAll(() => {
-        wallet = ethers.Wallet.createRandom()
+        const key = config.clientOptions.auth.privateKey
+        wallet = new ethers.Wallet(key)
+        // a = ethers.Wallet.from
         client = createClient({
-            auth: {
-                privateKey: wallet.privateKey,
-            },
+            // auth: {
+            //     privateKey: wallet.privateKey,
+            // },
         })
     })
 
     beforeAll(async () => {
         createdStreamPath = `/StreamEndpoints-${Date.now()}`
         createdStream = await client.createStream({
-            id: `${wallet.address}${createdStreamPath}`,
+            id: `${wallet.address.toLowerCase()}${createdStreamPath}`,
             name: getName(),
             requireSignedData: true,
             requireEncryptedData: false,
@@ -59,7 +63,7 @@ function TestStreamEndpoints(getName: () => string) {
         })
 
         it('valid id', async () => {
-            const newId = `${wallet.address}/StreamEndpoints-createStream-newId-${Date.now()}`
+            const newId = `${wallet.address.toLowerCase()}/StreamEndpoints-createStream-newId-${Date.now()}`
             const newStream = await client.createStream({
                 id: newId,
             })
@@ -87,7 +91,7 @@ function TestStreamEndpoints(getName: () => string) {
         })
 
         it('get a non-existing Stream', async () => {
-            const id = `${wallet.address}/StreamEndpoints-nonexisting-${Date.now()}`
+            const id = `${wallet.address.toLowerCase()}/StreamEndpoints-nonexisting-${Date.now()}`
             return expect(() => client.getStream(id)).rejects.toThrow(NotFoundError)
         })
     })
@@ -100,7 +104,7 @@ function TestStreamEndpoints(getName: () => string) {
         })
 
         it('get a non-existing Stream', async () => {
-            const name = `${wallet.address}/StreamEndpoints-nonexisting-${Date.now()}`
+            const name = `${wallet.address.toLowerCase()}/StreamEndpoints-nonexisting-${Date.now()}`
             return expect(() => client.getStreamByName(name)).rejects.toThrow(NotFoundError)
         })
     })
@@ -131,7 +135,7 @@ function TestStreamEndpoints(getName: () => string) {
         })
 
         it('new Stream by id', async () => {
-            const newId = `${wallet.address}/StreamEndpoints-getOrCreate-newId-${Date.now()}`
+            const newId = `${wallet.address.toLowerCase()}/StreamEndpoints-getOrCreate-newId-${Date.now()}`
             const newStream = await client.getOrCreateStream({
                 id: newId,
             })
@@ -247,7 +251,7 @@ function TestStreamEndpoints(getName: () => string) {
         })
 
         it('Stream.hasPermission', async () => {
-            expect(await createdStream.hasPermission(StreamOperation.STREAM_SHARE, wallet.address)).toBeTruthy()
+            expect(await createdStream.hasPermission(StreamOperation.STREAM_SHARE, wallet.address.toLowerCase())).toBeTruthy()
         })
 
         it('Stream.grantPermission', async () => {

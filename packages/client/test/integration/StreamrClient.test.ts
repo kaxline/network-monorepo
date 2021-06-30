@@ -32,9 +32,9 @@ describeRepeats('StreamrClient', () => {
     const createClient = (opts = {}) => {
         const c = new StreamrClient({
             ...config.clientOptions,
-            auth: {
-                privateKey: fakePrivateKey(),
-            },
+            // auth: {
+            //     privateKey: fakePrivateKey(),
+            // },
             autoConnect: false,
             autoDisconnect: false,
             // disconnectDelay: 500,
@@ -114,10 +114,10 @@ describeRepeats('StreamrClient', () => {
 
     beforeEach(async () => {
         client = createClient()
-        await Promise.all([
-            client.session.getSessionToken(),
-            client.connect(),
-        ])
+        // await Promise.all([
+            // client.session.getSessionToken(),
+            // client.connect(),
+        // ])
         stream = await createStream()
         publishTestMessages = getPublishTestMessages(client, {
             stream,

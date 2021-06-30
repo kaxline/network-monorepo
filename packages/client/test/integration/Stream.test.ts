@@ -1,5 +1,5 @@
 import { StreamrClient } from '../../src/StreamrClient'
-import { Stream, StreamOperation, StreamPermission, StreamProperties } from '../../src/stream'
+import { Stream, StreamPermission, StreamProperties } from '../../src/stream'
 import { uid } from '../utils'
 // import { StorageNode } from '../../src/stream/StorageNode'
 
@@ -25,7 +25,7 @@ describe('Stream', () => {
 
     beforeAll(async () => {
         client = createClient()
-        await client.connect()
+        // await client.connect()
         const randompath = '/' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10)
         testProps = {
             name: uid('stream-integration-test'),

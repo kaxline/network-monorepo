@@ -20,7 +20,6 @@ export interface StreamPermission {
     streamid: string
     // operation: StreamOperation
     user: string
-    anonymous: boolean
     edit: boolean
     canDelete: boolean
     publishExpiration: BigNumber
