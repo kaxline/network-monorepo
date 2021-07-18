@@ -4,7 +4,7 @@ import mqtt from 'async-mqtt'
 import fetch from 'node-fetch'
 import { Wallet } from 'ethers'
 import { waitForCondition } from 'streamr-test-utils'
-import { startBroker as createBroker } from '../src/broker'
+import { Broker, createBroker } from '../src/broker'
 import { StorageConfig } from '../src/plugins/storage/StorageConfig'
 import { Todo } from '../src/types'
 import { Config } from '../src/config'
@@ -107,17 +107,15 @@ export function formConfig({
     }
 }
 
-export function startBroker(...args: Todo[]) {
+export const startBroker = async (...args: Todo[]): Promise<Broker> => {
     // @ts-expect-error
-    return createBroker(formConfig(...args))
+    const broker = await createBroker(formConfig(...args))
+    await broker.start()
+    return broker
 }
 
 export function getWsUrl(port: number, ssl = false) {
     return `${ssl ? 'wss' : 'ws'}://127.0.0.1:${port}/api/v1/ws`
-}
-
-export function getWsUrlWithControlAndMessageLayerVersions(port: number, ssl = false, controlLayerVersion = 2, messageLayerVersion = 32) {
-    return `${ssl ? 'wss' : 'ws'}://127.0.0.1:${port}/api/v1/ws?controlLayerVersion=${controlLayerVersion}&messageLayerVersion=${messageLayerVersion}`
 }
 
 // generates a private key
@@ -215,7 +213,11 @@ const getTestName = (module: NodeModule) => {
     return (groups !== null) ? groups[1] : module.filename
 }
 
-export const createTestStream = (streamrClient: StreamrClient, module: NodeModule, props?: Partial<StreamProperties>) => {
+export const createTestStream = (
+    streamrClient: StreamrClient,
+    module: NodeModule,
+    props?: Partial<StreamProperties>
+): Promise<Stream> => {
     return streamrClient.createStream({
         id: '/test/' + getTestName(module) + '/' + Date.now(),
         ...props
