@@ -43,9 +43,11 @@ export function getNodeConnections(nodes: readonly string[], overlayPerStream: O
     nodes.forEach((node) => {
         result[node] = new Set<string>()
     })
-    nodes.forEach((node) => {
-        Object.values(overlayPerStream).forEach((overlayTopology) => {
-            result[node] = new Set([...result[node], ...overlayTopology.getNeighbors(node)])
+    Object.values(overlayPerStream).forEach((overlayTopology) => {
+        Object.entries(overlayTopology.getNodes()).forEach(([nodeId, neighbors]) => {
+            neighbors.forEach((neighborNode) => {
+                result[nodeId].add(neighborNode)
+            })
         })
     })
     return result
@@ -64,6 +66,22 @@ export function addRttsToNodeConnections(
             }
         })
     }
+}
+
+export function findStreamsForNode(
+    overlayPerStream: OverlayPerStream,
+    nodeId: string
+): Array<{ streamId: string, partition: number, topologySize: number}> {
+    return Object.entries(overlayPerStream)
+        .filter(([_, overlayTopology]) => overlayTopology.hasNode(nodeId))
+        .map(([streamKey, overlayTopology]) => {
+            const streamIdAndPartition = StreamIdAndPartition.fromKey(streamKey)
+            return {
+                streamId: streamIdAndPartition.id,
+                partition: streamIdAndPartition.partition,
+                topologySize: overlayTopology.getNumberOfNodes()
+            }
+        })
 }
 
 function getNodeToNodeConnectionRtts(

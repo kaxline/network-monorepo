@@ -1,13 +1,13 @@
-import { Wallet } from 'ethers'
 import fetchNatType from 'nat-type-identifier'
 import { Logger } from 'streamr-network'
 import { wait } from 'streamr-test-utils'
+import { Metrics } from 'streamr-network/dist/helpers/MetricsContext'
 import { Plugin, PluginOptions } from '../../Plugin'
 import PLUGIN_CONFIG_SCHEMA from './config.schema.json'
-import { Metrics } from '../../../../network/dist/helpers/MetricsContext'
 import { scheduleAtInterval } from '../../helpers/scheduler'
 import { withTimeout } from '../../helpers/withTimeout'
 import { fetchOrThrow } from '../../helpers/fetch'
+import { version as CURRENT_VERSION } from '../../../package.json'
 
 const REWARD_STREAM_PARTITION = 0
 const LATENCY_POLL_INTERVAL = 30 * 60 * 1000
@@ -39,16 +39,16 @@ export class TestnetMinerPlugin extends Plugin<TestnetMinerPluginConfig> {
     latestLatency?: number
     latencyPoller?: { stop: () => void }
     natType?: string
-    nodeAddress: string
     metrics: Metrics
+    dummyMessagesReceived: number
 
     constructor(options: PluginOptions) {
         super(options)
         if (this.streamrClient === undefined) {
             throw new Error('StreamrClient is not available')
         }
-        this.nodeAddress = new Wallet(this.brokerConfig.ethereumPrivateKey).address
         this.metrics = this.metricsContext.create(METRIC_CONTEXT_NAME).addFixedMetric(METRIC_LATEST_CODE)
+        this.dummyMessagesReceived = 0
     }
 
     async start() {
@@ -58,8 +58,19 @@ export class TestnetMinerPlugin extends Plugin<TestnetMinerPluginConfig> {
         if (this.pluginConfig.stunServerHost !== null) {
             this.natType = await this.getNatType()
         }
+        this.networkNode.setExtraMetadata({
+            natType: this.natType || null,
+            brokerVersion: CURRENT_VERSION,
+        })
         await this.streamrClient!.subscribe(this.pluginConfig.rewardStreamId, (message: any) => {
-            this.onRewardCodeReceived(message.rewardCode)
+            if (message.rewardCode) {
+                this.onRewardCodeReceived(message.rewardCode)
+            } if (message.info) {
+                logger.info(message.info)
+            } else {
+                logger.trace(`Dummy message (#${this.dummyMessagesReceived}) received: ${message}`)
+                this.dummyMessagesReceived += 1
+            }
         })
         logger.info('Testnet miner plugin started')
     }
@@ -84,7 +95,7 @@ export class TestnetMinerPlugin extends Plugin<TestnetMinerPluginConfig> {
     private async claimRewardCode(rewardCode: string, peers: Peer[], delay: number): Promise<void> {
         const body = {
             rewardCode,
-            nodeAddress: this.nodeAddress,
+            nodeAddress: this.nodeId,
             clientServerLatency: this.latestLatency,
             waitTime: delay,
             natType: this.natType,
