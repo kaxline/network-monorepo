@@ -1,4 +1,4 @@
-FROM node:16-bullseye as build
+FROM node:18-bullseye as build
 WORKDIR /usr/src/monorepo
 RUN npm set unsafe-perm true && \
 	# explicitly use npm v8
@@ -8,7 +8,7 @@ RUN npm config set python "$(which python3)" && npm run bootstrap-pkg -- streamr
 
 RUN npm run prune-pkg -- streamr-broker
 
-FROM node:16-bullseye-slim
+FROM node:18-bullseye
 RUN apt-get update && apt-get install --assume-yes --no-install-recommends curl \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
