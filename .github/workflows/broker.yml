@@ -53,7 +53,7 @@ jobs:
           npm install -g npm@8 --prefer-offline --no-audit
           npm run bootstrap-pkg streamr-broker
       - name: Start Streamr Docker Stack
-        uses: streamr-dev/streamr-docker-dev-action@v1.0.0-alpha.3
+        uses: streamr-dev/streamr-docker-dev-action@v1.0.1
         with:
           services-to-start: "cassandra init-keyspace nginx parity-sidechain-node0 graph-deploy-streamregistry-subgraph parity-node0"
       - run: npm run test-integration
@@ -96,7 +96,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
       - name: Start Streamr Docker Stack
-        uses: streamr-dev/streamr-docker-dev-action@v1.0.0-alpha.3
+        uses: streamr-dev/streamr-docker-dev-action@v1.0.1
         with:
           services-to-start: "nginx trackers parity-node0 parity-sidechain-node0 broker-node-no-storage-1 graph-deploy-streamregistry-subgraph"
       - run: |
